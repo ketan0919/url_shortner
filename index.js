@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const urlRoute = require("./routes/url");
 const {connectDb} = require("./connection");
+const URL = require("./models/url");
 
 const PORT = 8001;
 
@@ -13,4 +14,15 @@ connectDb("mongodb://127.0.0.1:27017/url_short")
 
 app.use("/url",urlRoute);
 
+app.get("/:shortId",async(req,res)=>{
+    const shortId = req.params.shortId;
+    const entry = await URL.findOneAndUpdate({shortId},{
+        $push:{
+            visitHistory:{
+                timestamp: Date.now(), 
+            },
+        }
+    })
+    res.redirect(entry.redirectURL);
+});
 app.listen(PORT,()=>console.log(`Server started at ${PORT}`));
